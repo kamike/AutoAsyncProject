@@ -24,6 +24,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onImageAvailable(ImageReader imageReader) {
                     Image image = imageReader.acquireLatestImage();
+                    if (image == null) {
+                        return;
+                    }
                     int width = image.getWidth();
 
                     int height = image.getHeight();
@@ -103,8 +107,10 @@ public class MainActivity extends AppCompatActivity {
                     bitmap.copyPixelsFromBuffer(buffer);
 
                     bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height);
+
                     try {
-                        saveBitmap(bitmap);
+//                        saveBitmap(bitmap);
+                        sendBitmaSocket(bitmap);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -113,6 +119,53 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }, mHandler);
+        }
+    }
+
+    private void sendBitmaSocket(final Bitmap bitmap) throws IOException {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Socket socket = new Socket("192.168.1.50", SERVER_PORT);
+                    DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos);
+                    dos.writeInt(baos.size());
+                    dos.write(baos.toByteArray());
+                    dos.flush();
+                    dos.close();
+                    baos.close();
+                    socket.close();
+                    bitmap.recycle();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void setSocketImage(Image image) {
+
+        Image.Plane[] planesArray = image.getPlanes();
+
+        Socket socket;
+        try {// 创建一个Socket对象，并指定服务端的IP及端口号
+            socket = new Socket("192.168.1.50", SERVER_PORT);
+
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+
+            dos.writeInt(0);
+            dos.write(0);
+
+            socket.close();
+            LogUtils.i("上传文件完成了===");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -176,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
         new Thread() {
             @Override
             public void run() {
-               final File file = new File(Environment.getExternalStorageDirectory() + "/android_test/screen/test1.jpg");
+                final File file = new File(Environment.getExternalStorageDirectory() + "/android_test/screen/test1.jpg");
                 if (!file.exists()) {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -192,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
 
                     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
                     int size = (int) file.length();
-                    System.out.println("size = "+size/1024.0f);
+                    System.out.println("size = " + size / 1024.0f);
                     byte[] data = new byte[size];
                     // 创建一个InputStream用户读取要发送的文件。
                     FileInputStream inputStream = new FileInputStream(file);
