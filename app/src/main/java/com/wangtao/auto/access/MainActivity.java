@@ -36,12 +36,15 @@ import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final int SERVER_PORT = 8887;
+    public static final String SERVER_ADDRESS = "192.168.2.123";
+
     private MediaProjectionManager projectionManager;
     private int SCREEN_SHOT = 1;
     private MediaProjection mediaProject;
     private ImageReader imageReader;
-    private int imgWidth = 1080;
-    private int imgHeight = 1920;
+    private int imgWidth = 540;
+    private int imgHeight = 960;
     private int mDensity = 2;
     private static final int VIRTUAL_DISPLAY_FLAGS = DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
 
@@ -127,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Socket socket = new Socket("192.168.1.50", SERVER_PORT);
+                    Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
                     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -139,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
                     baos.close();
                     socket.close();
                     bitmap.recycle();
+                    LogUtils.i("发送了一张图");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -153,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
         Socket socket;
         try {// 创建一个Socket对象，并指定服务端的IP及端口号
-            socket = new Socket("192.168.1.50", SERVER_PORT);
+            socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
 
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
@@ -198,6 +202,9 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void onclickStop(View view) {
+        if (mediaProject == null) {
+            return;
+        }
         mediaProject.stop();
         Toast.makeText(this, "停止截屏", Toast.LENGTH_SHORT).show();
     }
@@ -223,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show();
     }
 
-    public static final int SERVER_PORT = 8888;
+
 
     public void onclickSocketTest(View view) {
         new Thread() {
@@ -241,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Socket socket;
                 try {// 创建一个Socket对象，并指定服务端的IP及端口号
-                    socket = new Socket("192.168.1.50", SERVER_PORT);
+                    socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
 
                     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
                     int size = (int) file.length();
