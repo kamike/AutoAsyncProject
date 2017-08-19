@@ -25,6 +25,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -111,12 +112,9 @@ public class MainActivity extends AppCompatActivity {
 
                     bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height);
 
-                    try {
 //                        saveBitmap(bitmap);
-                        sendBitmaSocket(bitmap);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    sendBitmaSocket(bitmap);
+
 
                     image.close();
 
@@ -125,29 +123,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void sendBitmaSocket(final Bitmap bitmap) throws IOException {
+    private void sendBitmaSocket(final Bitmap bitmap) {
         new Thread() {
             @Override
             public void run() {
                 try {
                     Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+
+
+
+
                     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-
-//                    //x,y
-//                    DataInputStream out = new DataInputStream(socket.getInputStream());
-//                    String str = out.readUTF();
-//                    LogUtils.i("从服务器读取到：" + str);
-
-
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos);
                     dos.writeInt(baos.size());
                     dos.write(baos.toByteArray());
                     dos.flush();
+
+                    //x,y
+                    DataInputStream out = new DataInputStream(socket.getInputStream());
+                    String str = out.readUTF();
+                    LogUtils.i("从服务器读取到：" + str);
+                    out.close();
                     dos.close();
                     baos.close();
-
-//                    out.close();
                     socket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
