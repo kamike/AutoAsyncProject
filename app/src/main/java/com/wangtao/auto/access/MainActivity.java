@@ -127,11 +127,9 @@ public class MainActivity extends AppCompatActivity {
         new Thread() {
             @Override
             public void run() {
+                Socket socket = null;
                 try {
-                    Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-
-
-
+                    socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
 
                     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -139,18 +137,26 @@ public class MainActivity extends AppCompatActivity {
                     dos.writeInt(baos.size());
                     dos.write(baos.toByteArray());
                     dos.flush();
-
+                    baos.close();
                     //x,y
                     DataInputStream out = new DataInputStream(socket.getInputStream());
                     String str = out.readUTF();
                     LogUtils.i("从服务器读取到：" + str);
                     out.close();
                     dos.close();
-                    baos.close();
+
                     socket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
+                    if (socket != null) {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     if (!bitmap.isRecycled()) {
                         bitmap.recycle();
                     }
