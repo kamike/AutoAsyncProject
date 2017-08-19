@@ -24,6 +24,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         if (PermissionUtil.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
         }
+        EventBus.getDefault().register(this);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -142,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
                     DataInputStream out = new DataInputStream(socket.getInputStream());
                     String str = out.readUTF();
                     LogUtils.i("从服务器读取到：" + str);
+                    EventBus.getDefault().post(str);
                     out.close();
                     dos.close();
 
@@ -286,5 +290,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }.start();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }

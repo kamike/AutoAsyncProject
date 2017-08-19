@@ -3,8 +3,13 @@ package com.wangtao.auto.access;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Created by wangtao on 2017/8/16.
@@ -22,6 +27,7 @@ public class MyAccessibilityService extends AccessibilityService {
 //        serviceInfo.packageNames = new String[]{"com.android.settings","com.huawei.android.launcher"};
         serviceInfo.notificationTimeout = 0;
 //        setServiceInfo(serviceInfo);
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -49,6 +55,19 @@ public class MyAccessibilityService extends AccessibilityService {
 
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getServerOnclickXY(String positionXY){
+        if(TextUtils.isEmpty(positionXY)){
+            LogUtils.i("服务器返回坐标为空");
+            return;
+        }
+        String[] pos=positionXY.split(",");
+
+
+    }
+
+
+
     public static void doLog(String str) {
         LogUtils.i("=======" + str);
     }
@@ -56,5 +75,11 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onInterrupt() {
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }
