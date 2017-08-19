@@ -37,14 +37,14 @@ import java.nio.ByteBuffer;
 public class MainActivity extends AppCompatActivity {
 
     public static final int SERVER_PORT = 8887;
-    public static final String SERVER_ADDRESS = "192.168.2.123";
+    public static final String SERVER_ADDRESS = "192.168.1.35";
 
     private MediaProjectionManager projectionManager;
     private int SCREEN_SHOT = 1;
     private MediaProjection mediaProject;
     private ImageReader imageReader;
-    private int imgWidth = 540;
-    private int imgHeight = 960;
+    private int imgWidth = 1080;
+    private int imgHeight = 1920;
     private int mDensity = 2;
     private static final int VIRTUAL_DISPLAY_FLAGS = DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
 
@@ -133,6 +133,12 @@ public class MainActivity extends AppCompatActivity {
                     Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
                     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
+//                    //x,y
+//                    DataInputStream out = new DataInputStream(socket.getInputStream());
+//                    String str = out.readUTF();
+//                    LogUtils.i("从服务器读取到：" + str);
+
+
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos);
                     dos.writeInt(baos.size());
@@ -140,11 +146,15 @@ public class MainActivity extends AppCompatActivity {
                     dos.flush();
                     dos.close();
                     baos.close();
+
+//                    out.close();
                     socket.close();
-                    bitmap.recycle();
-                    LogUtils.i("发送了一张图");
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    if (!bitmap.isRecycled()) {
+                        bitmap.recycle();
+                    }
                 }
             }
         }.start();
@@ -231,11 +241,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     public void onclickSocketTest(View view) {
         new Thread() {
             @Override
             public void run() {
+                LogUtils.i("init=======");
                 final File file = new File(Environment.getExternalStorageDirectory() + "/android_test/screen/test1.jpg");
                 if (!file.exists()) {
                     runOnUiThread(new Runnable() {
