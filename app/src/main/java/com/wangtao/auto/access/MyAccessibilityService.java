@@ -50,6 +50,7 @@ public class MyAccessibilityService extends AccessibilityService {
         if (node != null) {
             Rect rect = new Rect();
             node.getBoundsInScreen(rect);
+
 //            doLog("得到了矩形:" + rect.left + "," + rect.right + "," + rect.top + "," + rect.bottom);
         }
 
