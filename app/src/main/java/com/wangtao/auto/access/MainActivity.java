@@ -24,11 +24,17 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.wangtao.auto.access.utils.LogUtils;
+import com.wangtao.auto.access.utils.PermissionUtil;
+
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -40,7 +46,7 @@ import java.nio.ByteBuffer;
 public class MainActivity extends AppCompatActivity {
 
     public static final int SERVER_PORT = 8887;
-    public static final String SERVER_ADDRESS = "192.168.1.35";
+    public static final String SERVER_ADDRESS = "192.168.1.94";
 
     private MediaProjectionManager projectionManager;
     private int SCREEN_SHOT = 1;
@@ -151,7 +157,10 @@ public class MainActivity extends AppCompatActivity {
 
                     socket.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    if (!(e instanceof EOFException)) {
+                        e.printStackTrace();
+                    }
+
                 } finally {
                     if (socket != null) {
                         try {
@@ -289,6 +298,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }.start();
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getServerOnclickXY(int positionXY) {
 
     }
 

@@ -6,10 +6,19 @@ import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.Toast;
+
+import com.wangtao.auto.access.utils.LogUtils;
+import com.wangtao.auto.access.utils.Utils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Created by wangtao on 2017/8/16.
@@ -41,36 +50,78 @@ public class MyAccessibilityService extends AccessibilityService {
                 //界面文字改动
                 break;
         }
-        AccessibilityNodeInfo node = event.getSource();
-
-        doLog("getSource:" + node);
-//        doLog("getSource:" + event.getPackageName());
-        doLog("getRootInActiveWindow:" + getRootInActiveWindow());
-
-        if (node != null) {
-            Rect rect = new Rect();
-            node.getBoundsInScreen(rect);
-
-//            doLog("得到了矩形:" + rect.left + "," + rect.right + "," + rect.top + "," + rect.bottom);
+        final AccessibilityNodeInfo node = getRootInActiveWindow();
+        if (node == null) {
+            return;
         }
+        listNode = new ArrayList<>();
+        AddAllToList(node);
+        LogUtils.i("添加元素的长度：" + listNode.size());
+
 
     }
 
+    ArrayList<AccessibilityNodeInfo> listNode;
+
+    private void AddAllToList(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return;
+        }
+        for (int index = 0; index < node.getChildCount(); index++) {
+            AccessibilityNodeInfo nodeChild = node.getChild(index);
+            listNode.add(nodeChild);
+            AddAllToList(nodeChild);
+        }
+    }
+
+
+    private int OnclickX = 540, OnclickY = 960;
+
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void getServerOnclickXY(String positionXY){
-        if(TextUtils.isEmpty(positionXY)){
+    public void getServerOnclickXY(String positionXY) {
+        if (TextUtils.isEmpty(positionXY)) {
             LogUtils.i("服务器返回坐标为空");
             return;
         }
-        String[] pos=positionXY.split(",");
+        String[] pos = positionXY.split(",");
+        if (pos == null || pos.length > 2) {
+            Toast.makeText(this, "服务器发送的坐标错误:" + Arrays.toString(pos), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        OnclickX = Integer.parseInt(pos[0]);
+        OnclickY = Integer.parseInt(pos[1]);
+        if (listNode.isEmpty()) {
+            return;
+        }
+        Collections.sort(listNode, new Comparator<AccessibilityNodeInfo>() {
+            @Override
+            public int compare(AccessibilityNodeInfo node1, AccessibilityNodeInfo node2) {
 
+                Rect rect1 = new Rect();
+                node1.getBoundsInScreen(rect1);
+                float space1 = (float) Math.sqrt(Math.pow(rect1.centerX() - OnclickX, 2) + Math.pow(rect1.centerY() - OnclickY, 2));
+
+                Rect rect2 = new Rect();
+                node2.getBoundsInScreen(rect2);
+                float space2 = (float) Math.sqrt(Math.pow(rect2.centerX() - OnclickX, 2) + Math.pow(rect2.centerY() - OnclickY, 2));
+
+                return (int) (space1 - space2);
+            }
+        });
+        AccessibilityNodeInfo nodeTarget = listNode.get(0);
+        doLog("点击第一个元素：" + Utils.toNodeString(nodeTarget));
+        try {
+            nodeTarget.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
+        doLog("执行点击==完毕");
 
     }
 
 
-
     public static void doLog(String str) {
-        LogUtils.i("=======" + str);
+        LogUtils.i("" + str);
     }
 
 
