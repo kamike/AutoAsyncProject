@@ -18,10 +18,12 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.wangtao.auto.access.utils.LogUtils;
@@ -46,7 +48,7 @@ import java.nio.ByteBuffer;
 public class MainActivity extends AppCompatActivity {
 
     public static final int SERVER_PORT = 8887;
-    public static final String SERVER_ADDRESS = "192.168.1.94";
+    public static String SERVER_ADDRESS = "192.168.1.94";
 
     private MediaProjectionManager projectionManager;
     private int SCREEN_SHOT = 1;
@@ -56,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
     private int imgHeight = 1920;
     private int mDensity = 2;
     private static final int VIRTUAL_DISPLAY_FLAGS = DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
+
+
+    private EditText etIpAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
+        etIpAddress = (EditText) findViewById(R.id.main_ip_et);
+
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         mDensity = metrics.densityDpi;
         if (PermissionUtil.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -77,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void onclickStart(View view) {
+        SERVER_ADDRESS = etIpAddress.getText().toString();
+        if (TextUtils.isEmpty(SERVER_ADDRESS)) {
+            Toast.makeText(this, "服务器ip错误!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         countIndex = 0;
         projectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         startActivityForResult(projectionManager.createScreenCaptureIntent(), SCREEN_SHOT);
