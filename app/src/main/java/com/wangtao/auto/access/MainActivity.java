@@ -273,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void onclickSocketTest(View view) {
+        SERVER_ADDRESS = etIpAddress.getText().toString();
         new Thread() {
             @Override
             public void run() {
