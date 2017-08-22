@@ -11,6 +11,6 @@ public class Utils {
     public static String toNodeString(AccessibilityNodeInfo node) {
         Rect rect=new Rect();
         node.getBoundsInScreen(rect);
-        return node.getText()+","+rect.centerX()+","+rect.centerY();
+        return node.getText()+","+node.getContentDescription()+","+rect.centerX()+","+rect.centerY();
     }
 }

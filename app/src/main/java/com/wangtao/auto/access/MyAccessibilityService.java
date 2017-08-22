@@ -49,11 +49,17 @@ public class MyAccessibilityService extends AccessibilityService {
             case AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED:
                 //界面文字改动
                 break;
+            case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
+
+                break;
         }
         final AccessibilityNodeInfo node = getRootInActiveWindow();
+
+
         if (node == null) {
             return;
         }
+
         listNode = new ArrayList<>();
         AddAllToList(node);
         LogUtils.i("添加元素的长度：" + listNode.size());
@@ -115,7 +121,6 @@ public class MyAccessibilityService extends AccessibilityService {
         } catch (IllegalStateException e) {
             e.printStackTrace();
         }
-        doLog("执行点击==完毕");
 
     }
 
