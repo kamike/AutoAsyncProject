@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int SERVER_PORT = 8887;
     public static String SERVER_ADDRESS = "192.168.1.94";
+    public static int SCREEN_Height;
+    public static int SCREEN_Width;
 
     private MediaProjectionManager projectionManager;
     private int SCREEN_SHOT = 1;
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
+        initScreenSize();
         etIpAddress = (EditText) findViewById(R.id.main_ip_et);
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -82,7 +85,13 @@ public class MainActivity extends AppCompatActivity {
         EventBus.getDefault().register(this);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void initScreenSize() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        SCREEN_Height = metrics.heightPixels;
+        SCREEN_Width = metrics.widthPixels;
+    }
+
     public void onclickStart(View view) {
         SERVER_ADDRESS = etIpAddress.getText().toString();
         if (TextUtils.isEmpty(SERVER_ADDRESS)) {
@@ -92,7 +101,9 @@ public class MainActivity extends AppCompatActivity {
 
         countIndex = 0;
         projectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
-        startActivityForResult(projectionManager.createScreenCaptureIntent(), SCREEN_SHOT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            startActivityForResult(projectionManager.createScreenCaptureIntent(), SCREEN_SHOT);
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

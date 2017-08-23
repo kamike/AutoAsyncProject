@@ -75,13 +75,47 @@ public class MyAccessibilityService extends AccessibilityService {
         }
         for (int index = 0; index < node.getChildCount(); index++) {
             AccessibilityNodeInfo nodeChild = node.getChild(index);
-            listNode.add(nodeChild);
+            if (isCheckNode(nodeChild)) {
+                listNode.add(nodeChild);
+            }
             AddAllToList(nodeChild);
         }
     }
 
+    /**
+     * 检查可以点击在屏幕范围内才添加到列表
+     *
+     * @param nodeChild
+     * @return
+     */
+    private boolean isCheckNode(AccessibilityNodeInfo nodeChild) {
+        if (nodeChild == null) {
+            return false;
+        }
+        if (nodeChild.isClickable()) {
+            return true;
+        } else {
 
-    private int OnclickX = 540, OnclickY = 960;
+        }
+
+        if (!nodeChild.isClickable()) {
+            if (!TextUtils.isEmpty(nodeChild.getText()) || !TextUtils.isEmpty(nodeChild.getContentDescription())) {
+                return true;
+            }
+
+            return false;
+        }
+        Rect rect = new Rect();
+        nodeChild.getBoundsInScreen(rect);
+        if (rect.left <= 0 || rect.top <= 0 || rect.bottom >= MainActivity.SCREEN_Height || rect.right >= MainActivity.SCREEN_Width) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    private int OnclickX = 0, OnclickY = 0;
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getServerOnclickXY(String positionXY) {
