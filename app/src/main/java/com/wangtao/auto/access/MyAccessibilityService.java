@@ -15,10 +15,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.LinkedHashSet;
 
 /**
  * Created by wangtao on 2017/8/16.
@@ -60,14 +58,14 @@ public class MyAccessibilityService extends AccessibilityService {
             return;
         }
 
-        listNode = new ArrayList<>();
+        listNode = new LinkedHashSet<>();
         AddAllToList(node);
         LogUtils.i("添加元素的长度：" + listNode.size());
-
+//        getServerOnclickXY("540,960");
 
     }
 
-    ArrayList<AccessibilityNodeInfo> listNode;
+    LinkedHashSet<AccessibilityNodeInfo> listNode;
 
     private void AddAllToList(AccessibilityNodeInfo node) {
         if (node == null) {
@@ -94,8 +92,6 @@ public class MyAccessibilityService extends AccessibilityService {
         }
         if (nodeChild.isClickable()) {
             return true;
-        } else {
-
         }
 
         if (!nodeChild.isClickable()) {
@@ -133,30 +129,36 @@ public class MyAccessibilityService extends AccessibilityService {
         if (listNode.isEmpty()) {
             return;
         }
-        Collections.sort(listNode, new Comparator<AccessibilityNodeInfo>() {
-            @Override
-            public int compare(AccessibilityNodeInfo node1, AccessibilityNodeInfo node2) {
 
+        AccessibilityNodeInfo nodeTarget = null;
+        float currentSpace = 0;
+        for (AccessibilityNodeInfo info : listNode) {
+            if (nodeTarget != null) {
+                Rect rect = new Rect();
+                info.getBoundsInScreen(rect);
+                //当前距离
+                float space = (float) Math.sqrt(Math.pow(rect.centerX() - OnclickX, 2) + Math.pow(rect.centerY() - OnclickY, 2));
+                if (currentSpace > space) {
+                    currentSpace = space;
+                    nodeTarget = info;
+                }
+            } else {
                 Rect rect1 = new Rect();
-                node1.getBoundsInScreen(rect1);
-                float space1 = (float) Math.sqrt(Math.pow(rect1.centerX() - OnclickX, 2) + Math.pow(rect1.centerY() - OnclickY, 2));
-
-                Rect rect2 = new Rect();
-                node2.getBoundsInScreen(rect2);
-                float space2 = (float) Math.sqrt(Math.pow(rect2.centerX() - OnclickX, 2) + Math.pow(rect2.centerY() - OnclickY, 2));
-
-                return (int) (space1 - space2);
+                info.getBoundsInScreen(rect1);
+                currentSpace = (float) Math.sqrt(Math.pow(rect1.centerX() - OnclickX, 2) + Math.pow(rect1.centerY() - OnclickY, 2));
+                nodeTarget = info;
             }
-        });
-        AccessibilityNodeInfo nodeTarget = listNode.get(0);
-        doLog("点击第一个元素：" + Utils.toNodeString(nodeTarget));
+        }
+//        Toast.makeText(this, "坐标：" + Utils.toNodeString(nodeTarget), Toast.LENGTH_SHORT).show();
+        doLog("点击最近的一个元素：" + Utils.toNodeString(nodeTarget));
         try {
-            nodeTarget.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+//            nodeTarget.performAction(AccessibilityNodeInfo.ACTION_CLICK);
         } catch (IllegalStateException e) {
             e.printStackTrace();
         }
 
     }
+
 
 
     public static void doLog(String str) {
