@@ -182,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
                     EventBus.getDefault().post(str);
                     out.close();
                     dos.close();
-
                     socket.close();
                 } catch (IOException e) {
                     if (!(e instanceof EOFException)) {
