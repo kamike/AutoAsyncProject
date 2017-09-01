@@ -26,6 +26,7 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.blankj.utilcode.util.ScreenUtils;
 import com.wangtao.auto.access.utils.LogUtils;
 import com.wangtao.auto.access.utils.PermissionUtil;
 
@@ -79,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         mDensity = metrics.densityDpi;
+        imgWidth = ScreenUtils.getScreenWidth() / 1;
+        imgHeight = ScreenUtils.getScreenHeight() / 1;
+
         if (PermissionUtil.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
         }

@@ -2,6 +2,7 @@ package com.wangtao.auto.access;
 
 import android.app.Application;
 
+import com.blankj.utilcode.util.Utils;
 import com.wangtao.auto.access.utils.LogCrashHandler;
 
 /**
@@ -14,5 +15,6 @@ public class AppClass extends Application {
     public void onCreate() {
         super.onCreate();
         LogCrashHandler.getInstance().init(this);
+        Utils.init(this);
     }
 }

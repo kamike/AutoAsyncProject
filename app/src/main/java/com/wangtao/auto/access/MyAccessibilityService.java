@@ -3,6 +3,7 @@ package com.wangtao.auto.access;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.graphics.Rect;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -17,6 +18,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * Created by wangtao on 2017/8/16.
@@ -57,10 +59,28 @@ public class MyAccessibilityService extends AccessibilityService {
         if (node == null) {
             return;
         }
+//        LogUtils.i("className:"+node.getPackageName());
 
         listNode = new LinkedHashSet<>();
         AddAllToList(node);
         LogUtils.i("添加元素的长度：" + listNode.size());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && listNode.size() > 1000) {
+            int index = 0;
+
+            for (AccessibilityNodeInfo info : listNode) {
+//                index++;
+//                if (index > 10) {
+//                    break;
+//                }
+                StringBuffer sb = new StringBuffer();
+                sb.append(TextUtils.isEmpty(info.getText()) ? info.getContentDescription() : info.getText());
+                sb.append("," + info.isContentInvalid() + "," + info.canOpenPopup() + ",");
+                sb.append(",toUser:" + info.isVisibleToUser());
+                sb.append(",:" + info.isDismissable());
+                LogUtils.i("" + sb.toString());
+            }
+        }
+
 //        getServerOnclickXY("540,960");
 
     }
@@ -90,9 +110,13 @@ public class MyAccessibilityService extends AccessibilityService {
         if (nodeChild == null) {
             return false;
         }
+        if (!nodeChild.isVisibleToUser()) {
+            return false;
+        }
         if (nodeChild.isClickable()) {
             return true;
         }
+
 
         if (!nodeChild.isClickable()) {
             if (!TextUtils.isEmpty(nodeChild.getText()) || !TextUtils.isEmpty(nodeChild.getContentDescription())) {
@@ -127,6 +151,7 @@ public class MyAccessibilityService extends AccessibilityService {
         OnclickX = Integer.parseInt(pos[0]);
         OnclickY = Integer.parseInt(pos[1]);
         if (listNode.isEmpty()) {
+            Toast.makeText(this, "未获取到页面数据，请重新打开此页面！", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -151,14 +176,54 @@ public class MyAccessibilityService extends AccessibilityService {
         }
 //        Toast.makeText(this, "坐标：" + Utils.toNodeString(nodeTarget), Toast.LENGTH_SHORT).show();
         doLog("点击最近的一个元素：" + Utils.toNodeString(nodeTarget));
+        boolean isClickSuccess = false;
         try {
-//            nodeTarget.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            isClickSuccess = nodeTarget.performAction(AccessibilityNodeInfo.ACTION_CLICK);
         } catch (IllegalStateException e) {
             e.printStackTrace();
+        }
+        LogUtils.i("是否点击成功了：" + isClickSuccess);
+        if (!isClickSuccess) {
+            String tag = getNodeInfoString(nodeTarget);
+
+            AccessibilityNodeInfo windowInfo = getRootInActiveWindow();
+            if (windowInfo != null && !TextUtils.isEmpty(tag)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    List<AccessibilityNodeInfo> listTar = windowInfo.findAccessibilityNodeInfosByText(tag);
+
+                    if (listTar != null) {
+                        LogUtils.i("搜索到类似的多少条：" + listTar.size());
+                        for (AccessibilityNodeInfo i : listTar) {
+                            try {
+                                if (i.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                                    return;
+                                }
+                            } catch (IllegalStateException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    }
+                }
+            }
         }
 
     }
 
+    private String getNodeInfoString(AccessibilityNodeInfo nodeTarget) {
+        if (nodeTarget == null) {
+            return null;
+        }
+        if (TextUtils.isEmpty(nodeTarget.getText())) {
+            if (TextUtils.isEmpty(nodeTarget.getContentDescription())) {
+                return null;
+            } else {
+                return nodeTarget.getContentDescription().toString();
+            }
+        } else {
+            return nodeTarget.getText().toString();
+        }
+    }
 
 
     public static void doLog(String str) {
