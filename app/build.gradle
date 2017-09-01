@@ -31,4 +31,5 @@ dependencies {
 
     compile 'com.blankj:utilcode:1.8.5'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
+    compile 'com.alibaba:fastjson:1.2.33'
 }
