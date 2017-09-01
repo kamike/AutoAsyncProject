@@ -30,4 +30,5 @@ dependencies {
     compile 'org.greenrobot:eventbus:3.0.0'
 
     compile 'com.blankj:utilcode:1.8.5'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
 }

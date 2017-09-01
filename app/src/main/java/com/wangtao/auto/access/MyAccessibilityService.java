@@ -55,15 +55,15 @@ public class MyAccessibilityService extends AccessibilityService {
         }
         final AccessibilityNodeInfo node = getRootInActiveWindow();
 
-
         if (node == null) {
             return;
         }
+        LogUtils.i("添加元素的长度：" + node.getChildCount());
 //        LogUtils.i("className:"+node.getPackageName());
 
         listNode = new LinkedHashSet<>();
         AddAllToList(node);
-        LogUtils.i("添加元素的长度：" + listNode.size());
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && listNode.size() > 1000) {
             int index = 0;
 
