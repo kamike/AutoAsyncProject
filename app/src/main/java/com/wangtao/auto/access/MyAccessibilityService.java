@@ -3,14 +3,13 @@ package com.wangtao.auto.access;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.graphics.Rect;
-import android.os.Build;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
 import com.wangtao.auto.access.utils.LogUtils;
-import com.wangtao.auto.access.utils.Utils;
+import com.wangtao.auto.access.utils.UtilsAccess;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -18,7 +17,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.List;
+
 
 /**
  * Created by wangtao on 2017/8/16.
@@ -65,18 +64,6 @@ public class MyAccessibilityService extends AccessibilityService {
         AddAllToList(node);
         AddAllToList(event.getSource());
 
-//        LinkedHashSet<AccessibilityNodeInfo> listSource = new LinkedHashSet<>();
-//        LinkedHashSet<AccessibilityNodeInfo> listRoot = new LinkedHashSet<>();
-//        AddAllToListSource(listSource, event.getSource());
-//        AddAllToListSource(listRoot, node);
-
-//
-//        for (AccessibilityNodeInfo info : listSource) {
-//            LogUtils.i("标签：" + Utils.toNodeString(info));
-//        }
-//        for (AccessibilityNodeInfo info : listRoot) {
-//            LogUtils.i("window：" + Utils.toNodeString(info));
-//        }
 
         // performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME);
 //         performGlobalAction(AccessibilityService.GESTURE_SWIPE_LEFT);
@@ -84,7 +71,7 @@ public class MyAccessibilityService extends AccessibilityService {
 
     }
 
-    LinkedHashSet<AccessibilityNodeInfo> listNode;
+    private LinkedHashSet<AccessibilityNodeInfo> listNode;
 
     private void AddAllToList(AccessibilityNodeInfo node) {
         if (node == null) {
@@ -92,10 +79,9 @@ public class MyAccessibilityService extends AccessibilityService {
         }
         for (int index = 0; index < node.getChildCount(); index++) {
             AccessibilityNodeInfo nodeChild = node.getChild(index);
-//            if (isCheckNode(nodeChild)) {
-
-            listNode.add(nodeChild);
-//            }
+            if (isCheckNode(nodeChild)) {
+                listNode.add(nodeChild);
+            }
             AddAllToList(nodeChild);
         }
     }
@@ -109,6 +95,9 @@ public class MyAccessibilityService extends AccessibilityService {
     private boolean isCheckNode(AccessibilityNodeInfo nodeChild) {
         if (nodeChild == null) {
             return false;
+        }
+        if (TextUtils.equals(nodeChild.getClassName(), "android.widget.Button")) {
+            return true;
         }
         if (!nodeChild.isVisibleToUser()) {
             return false;
@@ -140,18 +129,20 @@ public class MyAccessibilityService extends AccessibilityService {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getServerOnclickXY(String positionXY) {
         if (TextUtils.isEmpty(positionXY)) {
-            LogUtils.i("服务器返回坐标为空");
+            doLog("服务器返回坐标为空");
             return;
         }
         String[] pos = positionXY.split(",");
         if (pos == null || pos.length > 2) {
             Toast.makeText(this, "服务器发送的坐标错误:" + Arrays.toString(pos), Toast.LENGTH_SHORT).show();
+            doLog("服务器发送的坐标错误:" + Arrays.toString(pos));
             return;
         }
         OnclickX = Integer.parseInt(pos[0]);
         OnclickY = Integer.parseInt(pos[1]);
         if (listNode.isEmpty()) {
             Toast.makeText(this, "未获取到页面数据，请重新打开此页面！", Toast.LENGTH_SHORT).show();
+            doLog("未获取到页面数据，请重新打开此页面！");
             return;
         }
 
@@ -174,55 +165,23 @@ public class MyAccessibilityService extends AccessibilityService {
                 nodeTarget = info;
             }
         }
-//        Toast.makeText(this, "坐标：" + Utils.toNodeString(nodeTarget), Toast.LENGTH_SHORT).show();
-        doLog("点击最近的一个元素：" + Utils.toNodeString(nodeTarget));
+//        Toast.makeText(this, "坐标：" + UtilsAccess.toNodeString(nodeTarget), Toast.LENGTH_SHORT).show();
+        doLog("从多少条node里面查找：" + listNode.size());
+        doLog("点击最近的一个元素：" + UtilsAccess.toNodeString(nodeTarget));
         boolean isClickSuccess = false;
         try {
             isClickSuccess = nodeTarget.performAction(AccessibilityNodeInfo.ACTION_CLICK);
         } catch (IllegalStateException e) {
             e.printStackTrace();
         }
-        LogUtils.i("是否点击成功了：" + isClickSuccess);
+        doLog("是否首次点击成功了：" + isClickSuccess);
         if (!isClickSuccess) {
-            String tag = getNodeInfoString(nodeTarget);
 
-            AccessibilityNodeInfo windowInfo = getRootInActiveWindow();
-            if (windowInfo != null && !TextUtils.isEmpty(tag)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    List<AccessibilityNodeInfo> listTar = windowInfo.findAccessibilityNodeInfosByText(tag);
+            String tag = UtilsAccess.getNodeInfoString(nodeTarget);
 
-                    if (listTar != null) {
-                        LogUtils.i("搜索到类似的多少条：" + listTar.size());
-                        for (AccessibilityNodeInfo i : listTar) {
-                            try {
-                                if (i.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
-                                    return;
-                                }
-                            } catch (IllegalStateException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                    }
-                }
-            }
+            UtilsAccess.onclickTagNode(tag, getRootInActiveWindow());
         }
 
-    }
-
-    private String getNodeInfoString(AccessibilityNodeInfo nodeTarget) {
-        if (nodeTarget == null) {
-            return null;
-        }
-        if (TextUtils.isEmpty(nodeTarget.getText())) {
-            if (TextUtils.isEmpty(nodeTarget.getContentDescription())) {
-                return null;
-            } else {
-                return nodeTarget.getContentDescription().toString();
-            }
-        } else {
-            return nodeTarget.getText().toString();
-        }
     }
 
 
