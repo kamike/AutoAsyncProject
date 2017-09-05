@@ -65,18 +65,18 @@ public class MyAccessibilityService extends AccessibilityService {
         AddAllToList(node);
         AddAllToList(event.getSource());
 
-        LinkedHashSet<AccessibilityNodeInfo> listSource = new LinkedHashSet<>();
-        LinkedHashSet<AccessibilityNodeInfo> listRoot = new LinkedHashSet<>();
-        AddAllToListSource(listSource, event.getSource());
-        AddAllToListSource(listRoot, node);
+//        LinkedHashSet<AccessibilityNodeInfo> listSource = new LinkedHashSet<>();
+//        LinkedHashSet<AccessibilityNodeInfo> listRoot = new LinkedHashSet<>();
+//        AddAllToListSource(listSource, event.getSource());
+//        AddAllToListSource(listRoot, node);
 
-
-        for (AccessibilityNodeInfo info : listSource) {
-            LogUtils.i("标签：" + Utils.toNodeString(info));
-        }
-        for (AccessibilityNodeInfo info : listRoot) {
-            LogUtils.i("window：" + Utils.toNodeString(info));
-        }
+//
+//        for (AccessibilityNodeInfo info : listSource) {
+//            LogUtils.i("标签：" + Utils.toNodeString(info));
+//        }
+//        for (AccessibilityNodeInfo info : listRoot) {
+//            LogUtils.i("window：" + Utils.toNodeString(info));
+//        }
 
         // performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME);
 //         performGlobalAction(AccessibilityService.GESTURE_SWIPE_LEFT);

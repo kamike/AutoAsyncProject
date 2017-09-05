@@ -18,7 +18,8 @@ public class Utils {
         node.getBoundsInScreen(rect);
         if (rect.centerX() == 0 && rect.centerY() == 0) {
             boolean isClickSuccess = node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-            LogUtils.i("点击成功：" + isClickSuccess + "," + node);
+            boolean parent = node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            LogUtils.i("点击成功：" + parent + "," + node.getParent());
 
         }
         return node.getText() + "," + node.getContentDescription() + "," + rect.centerX() + "," + rect.centerY() + "," + node.getClassName();
