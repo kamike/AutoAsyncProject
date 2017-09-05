@@ -58,29 +58,28 @@ public class MyAccessibilityService extends AccessibilityService {
         if (node == null) {
             return;
         }
-        LogUtils.i("添加元素的长度：" + node.getChildCount());
-//        LogUtils.i("className:"+node.getPackageName());
+//        LogUtils.i("添加元素的长度：" + node.getChildCount());
 
         listNode = new LinkedHashSet<>();
+
         AddAllToList(node);
+        AddAllToList(event.getSource());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && listNode.size() > 1000) {
-            int index = 0;
+        LinkedHashSet<AccessibilityNodeInfo> listSource = new LinkedHashSet<>();
+        LinkedHashSet<AccessibilityNodeInfo> listRoot = new LinkedHashSet<>();
+        AddAllToListSource(listSource, event.getSource());
+        AddAllToListSource(listRoot, node);
 
-            for (AccessibilityNodeInfo info : listNode) {
-//                index++;
-//                if (index > 10) {
-//                    break;
-//                }
-                StringBuffer sb = new StringBuffer();
-                sb.append(TextUtils.isEmpty(info.getText()) ? info.getContentDescription() : info.getText());
-                sb.append("," + info.isContentInvalid() + "," + info.canOpenPopup() + ",");
-                sb.append(",toUser:" + info.isVisibleToUser());
-                sb.append(",:" + info.isDismissable());
-                LogUtils.i("" + sb.toString());
-            }
+
+        for (AccessibilityNodeInfo info : listSource) {
+            LogUtils.i("标签：" + Utils.toNodeString(info));
+        }
+        for (AccessibilityNodeInfo info : listRoot) {
+            LogUtils.i("window：" + Utils.toNodeString(info));
         }
 
+        // performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME);
+//         performGlobalAction(AccessibilityService.GESTURE_SWIPE_LEFT);
 //        getServerOnclickXY("540,960");
 
     }
@@ -93,9 +92,10 @@ public class MyAccessibilityService extends AccessibilityService {
         }
         for (int index = 0; index < node.getChildCount(); index++) {
             AccessibilityNodeInfo nodeChild = node.getChild(index);
-            if (isCheckNode(nodeChild)) {
-                listNode.add(nodeChild);
-            }
+//            if (isCheckNode(nodeChild)) {
+
+            listNode.add(nodeChild);
+//            }
             AddAllToList(nodeChild);
         }
     }
@@ -239,5 +239,20 @@ public class MyAccessibilityService extends AccessibilityService {
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+    }
+
+
+    private void AddAllToListSource(LinkedHashSet<AccessibilityNodeInfo> lsit, AccessibilityNodeInfo node) {
+        if (node == null) {
+            return;
+        }
+        for (int index = 0; index < node.getChildCount(); index++) {
+            AccessibilityNodeInfo nodeChild = node.getChild(index);
+//            if (isCheckNode(nodeChild)) {
+
+            lsit.add(nodeChild);
+//            }
+            AddAllToListSource(lsit, nodeChild);
+        }
     }
 }

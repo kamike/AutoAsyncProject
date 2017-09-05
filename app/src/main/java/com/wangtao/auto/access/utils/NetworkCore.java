@@ -41,7 +41,7 @@ public class NetworkCore {
         String content = JSON.toJSONString(params);
         LogUtils.e("content:" + content);
         RequestBody body = RequestBody.create(JSON_TYPE, content);
-        final Request req = new Request.Builder().url(BASEURL + "/" + urlName).post(body).addHeader("Content-Type", "application/json").build();
+        final Request req = new Request.Builder().url( urlName).post(body).addHeader("Content-Type", "application/json").build();
         client.newCall(req).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
