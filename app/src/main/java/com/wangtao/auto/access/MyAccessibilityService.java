@@ -137,13 +137,14 @@ public class MyAccessibilityService extends AccessibilityService {
             return;
         }
         String[] pos = positionXY.split(",");
-        if (pos == null || pos.length > 2) {
+        if (pos == null || pos.length <=0) {
             Toast.makeText(this, "服务器发送的坐标错误:" + Arrays.toString(pos), Toast.LENGTH_SHORT).show();
             doLog("服务器发送的坐标错误:" + Arrays.toString(pos));
             return;
         }
         OnclickX = Integer.parseInt(pos[0]);
         OnclickY = Integer.parseInt(pos[1]);
+        String serverMessage=pos[2];
         if (listNode.isEmpty()) {
             Toast.makeText(this, "未获取到页面数据，请重新打开此页面！", Toast.LENGTH_SHORT).show();
             doLog("未获取到页面数据，请重新打开此页面！");

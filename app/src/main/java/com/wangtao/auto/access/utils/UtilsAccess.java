@@ -1,10 +1,15 @@
 package com.wangtao.auto.access.utils;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.util.List;
+
+import static android.content.Context.CLIPBOARD_SERVICE;
 
 /**
  * Created by Administrator on 2017/8/21.
@@ -94,5 +99,21 @@ public class UtilsAccess {
             }
 
         }
+    }
+
+    public static void inputMessage(Context context, String text, AccessibilityNodeInfo nodeInfo) {
+        if (nodeInfo == null) {
+            return;
+        }
+        //找到当前获取焦点的view
+        AccessibilityNodeInfo target = nodeInfo.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
+        if (target == null) {
+            LogUtils.i("input: null====");
+            return;
+        }
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("label", text);
+        clipboard.setPrimaryClip(clip);
+        target.performAction(AccessibilityNodeInfo.ACTION_PASTE);
     }
 }
