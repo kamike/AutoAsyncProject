@@ -3,11 +3,13 @@ package com.wangtao.auto.access;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.graphics.Rect;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
+import com.blankj.utilcode.util.FileIOUtils;
 import com.wangtao.auto.access.utils.LogUtils;
 import com.wangtao.auto.access.utils.UtilsAccess;
 
@@ -15,6 +17,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
@@ -187,6 +191,19 @@ public class MyAccessibilityService extends AccessibilityService {
 
     public static void doLog(String str) {
         LogUtils.i("" + str);
+       File dir=new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/android_test");
+        if(!dir.exists()){
+            dir.mkdirs();
+        }
+        File file=new File(dir.getAbsolutePath()+"/log_temp");
+        if(file.exists()){
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        FileIOUtils.writeFileFromString(Environment.getExternalStorageDirectory().getAbsolutePath() + "/android_test/log_temp",str);
     }
 
 
