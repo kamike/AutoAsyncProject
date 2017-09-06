@@ -105,9 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
         countIndex = 0;
         projectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            startActivityForResult(projectionManager.createScreenCaptureIntent(), SCREEN_SHOT);
-        }
+        startActivityForResult(projectionManager.createScreenCaptureIntent(), SCREEN_SHOT);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -147,10 +145,10 @@ public class MainActivity extends AppCompatActivity {
 
                     bitmap.copyPixelsFromBuffer(buffer);
 
-                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height);
-
+                    Bitmap bmp = Bitmap.createBitmap(bitmap, 0, 0, width, height);
+                    recyBitmap(bitmap);
 //                        saveBitmap(bitmap);
-                    sendBitmaSocket(bitmap);
+                    sendBitmaSocket(bmp);
 
 
                     image.close();
@@ -170,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
                     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
                     dos.writeInt(baos.size());
                     dos.write(baos.toByteArray());
                     dos.flush();
@@ -183,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
                     out.close();
                     dos.close();
                     socket.close();
+                    recyBitmap(bitmap);
                 } catch (IOException e) {
                     if (!(e instanceof EOFException)) {
                         e.printStackTrace();
@@ -203,6 +202,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }.start();
+    }
+
+    private void recyBitmap(Bitmap bmp) {
+        if (bmp != null) {
+            if (!bmp.isRecycled()) {
+                bmp.recycle();
+            }
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)

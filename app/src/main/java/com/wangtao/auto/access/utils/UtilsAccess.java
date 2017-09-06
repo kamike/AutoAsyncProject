@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
@@ -22,12 +23,14 @@ public class UtilsAccess {
         }
         Rect rect = new Rect();
         node.getBoundsInScreen(rect);
-        if (rect.centerX() == 0 && rect.centerY() == 0) {
-            boolean isClickSuccess = node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-            boolean parent = node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
-            LogUtils.i("点击成功：" + parent + "," + node.getParent());
-
-        }
+//        if (rect.centerX() == 0 && rect.centerY() == 0) {
+//            boolean isClickSuccess = node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+//
+//
+//            boolean parent = node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+//            LogUtils.i("点击成功：" + parent + "," + node.getParent());
+//
+//        }
         return node.getText() + "," + node.getContentDescription() + "," + rect.centerX() + "," + rect.centerY() + "," + node.getClassName();
     }
 
@@ -115,5 +118,24 @@ public class UtilsAccess {
         ClipData clip = ClipData.newPlainText("label", text);
         clipboard.setPrimaryClip(clip);
         target.performAction(AccessibilityNodeInfo.ACTION_PASTE);
+    }
+
+    public static Rect findRect2String(LinkedHashSet<AccessibilityNodeInfo> list, String str) {
+        if (list == null || TextUtils.isEmpty(str)) {
+            return null;
+        }
+
+        for (AccessibilityNodeInfo node : list) {
+            if (TextUtils.equals(getNodeInfoString(node), str)) {
+                Rect rect = new Rect();
+                node.getBoundsInScreen(rect);
+                if (rect.centerX() != 0 || rect.centerY() != 0) {
+                    return rect;
+                }
+            }
+
+        }
+        return null;
+
     }
 }

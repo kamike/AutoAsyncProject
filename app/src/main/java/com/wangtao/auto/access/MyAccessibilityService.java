@@ -10,6 +10,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.FileIOUtils;
+import com.blankj.utilcode.util.ScreenUtils;
 import com.wangtao.auto.access.utils.LogUtils;
 import com.wangtao.auto.access.utils.UtilsAccess;
 
@@ -137,14 +138,18 @@ public class MyAccessibilityService extends AccessibilityService {
             return;
         }
         String[] pos = positionXY.split(",");
-        if (pos == null || pos.length <=0) {
+        if (pos == null || pos.length <= 0) {
             Toast.makeText(this, "服务器发送的坐标错误:" + Arrays.toString(pos), Toast.LENGTH_SHORT).show();
             doLog("服务器发送的坐标错误:" + Arrays.toString(pos));
             return;
         }
         OnclickX = Integer.parseInt(pos[0]);
         OnclickY = Integer.parseInt(pos[1]);
-        String serverMessage=pos[2];
+        String serverMessage = null;
+        if (pos.length > 2) {
+            serverMessage = pos[2];
+        }
+
         if (listNode.isEmpty()) {
             Toast.makeText(this, "未获取到页面数据，请重新打开此页面！", Toast.LENGTH_SHORT).show();
             doLog("未获取到页面数据，请重新打开此页面！");
@@ -172,6 +177,13 @@ public class MyAccessibilityService extends AccessibilityService {
         }
 //        Toast.makeText(this, "坐标：" + UtilsAccess.toNodeString(nodeTarget), Toast.LENGTH_SHORT).show();
         doLog("从多少条node里面查找：" + listNode.size());
+        //判断是否是微信界面
+        Rect rect = UtilsAccess.findRect2String(listNode, "收起键盘");
+        if (rect != null) {
+            LogUtils.i("收起键盘的坐标：" + rect.toString());
+            nodeTarget = getXYTagNode(rect, listNode);
+        }
+
         doLog("点击最近的一个元素：" + UtilsAccess.toNodeString(nodeTarget));
         boolean isClickSuccess = false;
         try {
@@ -180,31 +192,55 @@ public class MyAccessibilityService extends AccessibilityService {
             e.printStackTrace();
         }
         doLog("是否首次点击成功了：" + isClickSuccess);
+
+
         if (!isClickSuccess) {
 
             String tag = UtilsAccess.getNodeInfoString(nodeTarget);
 
             UtilsAccess.onclickTagNode(tag, getRootInActiveWindow());
         }
+        if (!TextUtils.isEmpty(serverMessage)) {
+            UtilsAccess.inputMessage(this, serverMessage, getRootInActiveWindow());
+        }
 
+    }
+
+    private AccessibilityNodeInfo getXYTagNode(Rect rect, LinkedHashSet<AccessibilityNodeInfo> listNode) {
+        //整个键盘的范围
+        Rect all = new Rect();
+        all.bottom = ScreenUtils.getScreenHeight();
+        all.top = rect.bottom;
+        LinkedHashSet<AccessibilityNodeInfo> listNumber = new LinkedHashSet<>();
+        AccessibilityNodeInfo tar = null;
+        for (AccessibilityNodeInfo node : listNode) {
+            if (TextUtils.equals(node.getClassName(), "android.widget.Button")) {
+                listNumber.add(node);
+                tar = node;
+            }
+
+        }
+        doLog("获取到密码框有多少个：" + listNumber);
+
+        return tar;
     }
 
 
     public static void doLog(String str) {
         LogUtils.i("" + str);
-       File dir=new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/android_test");
-        if(!dir.exists()){
+        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/android_test");
+        if (!dir.exists()) {
             dir.mkdirs();
         }
-        File file=new File(dir.getAbsolutePath()+"/log_temp");
-        if(file.exists()){
+        File file = new File(dir.getAbsolutePath() + "/log_temp");
+        if (file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        FileIOUtils.writeFileFromString(Environment.getExternalStorageDirectory().getAbsolutePath() + "/android_test/log_temp",str);
+        FileIOUtils.writeFileFromString(Environment.getExternalStorageDirectory().getAbsolutePath() + "/android_test/log_temp", str);
     }
 
 
