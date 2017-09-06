@@ -1,17 +1,16 @@
 package com.wangtao.auto.access;
 
 import android.app.AlertDialog;
-import android.app.Application;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
-import com.blankj.utilcode.util.Utils;
-import com.wangtao.auto.access.utils.ClientCtrl;
-import com.wangtao.auto.access.utils.LogCrashHandler;
 import com.wangtao.auto.access.utils.LogUtils;
 import com.wangtao.auto.access.utils.NetworkCore;
 
@@ -21,19 +20,17 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.HashMap;
 
-/**
- * Created by Administrator on 2017/8/21.
- */
-
-public class AppClass extends Application {
+public class WellcomeActivity extends AppCompatActivity {
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-//        LogCrashHandler.getInstance().init(this);
-        Utils.init(this);
-
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_wellcome);
+         startActivity(new Intent(this,MainActivity.class));
+        finish();
     }
+
+
 
 
 }

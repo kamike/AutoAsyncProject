@@ -1,6 +1,9 @@
 package com.wangtao.auto.access;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -10,6 +13,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,8 +30,11 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.wangtao.auto.access.utils.LogUtils;
+import com.wangtao.auto.access.utils.NetworkCore;
 import com.wangtao.auto.access.utils.PermissionUtil;
 
 import org.greenrobot.eventbus.EventBus;
@@ -45,6 +52,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -68,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
         //设置无标题
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         //设置全屏
@@ -86,7 +95,42 @@ public class MainActivity extends AppCompatActivity {
         if (PermissionUtil.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
         }
-        EventBus.getDefault().register(this);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        clientCtrlInit(this);
+    }
+
+    private void clientCtrlInit(Context appClass) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("name", "auto_press");
+        NetworkCore.doPost("http://wangtao.space:8080/ClientCtrl/a.do?name=auto_press", params);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN) //在ui线程执行
+    public void onSucccess(final UserBean user) {
+        LogUtils.i("服务器返回:" + user);
+        if (user == null) {
+            return;
+        }
+        try {
+
+            if (user.enable < 0) {
+                new AlertDialog.Builder(this).setMessage(user.show_message).setTitle("温馨提示").setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("mqqwpa://im/chat?chat_type=wpa&uin=" + user.contact_qq + "&version=1")));
+                    }
+                }).setCancelable(false).show();
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void initScreenSize() {

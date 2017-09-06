@@ -20,6 +20,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
@@ -69,7 +70,7 @@ public class MyAccessibilityService extends AccessibilityService {
         AddAllToList(node);
         AddAllToList(event.getSource());
 
-
+        doLog("==========页面添加元素的长度：" + node.getChildCount());
         // performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME);
 //         performGlobalAction(AccessibilityService.GESTURE_SWIPE_LEFT);
 //        getServerOnclickXY("540,960");
@@ -232,7 +233,7 @@ public class MyAccessibilityService extends AccessibilityService {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        File file = new File(dir.getAbsolutePath() + "/log_temp");
+        File file = new File(dir.getAbsolutePath() + "/log_temp.txt");
         if (file.exists()) {
             try {
                 file.createNewFile();
@@ -240,7 +241,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 e.printStackTrace();
             }
         }
-        FileIOUtils.writeFileFromString(Environment.getExternalStorageDirectory().getAbsolutePath() + "/android_test/log_temp", str);
+        FileIOUtils.writeFileFromString(file, str+"\n", true);
     }
 
 
